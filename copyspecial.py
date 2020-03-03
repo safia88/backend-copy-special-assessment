@@ -21,25 +21,65 @@ __author__ = "???"
 
 # +++your code here+++
 # Write functions and modify main() to call them
+# Given a dirname, returns a list of all its special files
+def get_special_paths(dir):
+    result = []
+    paths = os.listdir(dir)  # list of paths in that dir
+    for fname in paths:
+        match = re.search(r'__(\w+)__', fname)
+        if match:
+            result.append(fname)
+    return result
 
-def main():
-    # This snippet will help you get started with the argparse module.
+# Copy all of the given files to the given dir, creating it if necessary
+
+
+def copy_to(paths, to_dir):
+    if not os.path.exists(to_dir):
+        os.mkdir(to_dir)
+    for path in paths:
+        fname = os.path.basename(path)
+        shutil.copy(path, os.path.join(to_dir, fname))
+
+# Zip up all of the given files into a new zip file with the given name
+
+
+def zip_to(paths, zipfile):
+    command = ['zip', '-j', zipfile]
+    command.extend(paths)
+    print('\nCommand I\'m going to do {}'.format(' '.join(command)))
+    subprocess.call(command)
+
+
+def create_parser():
     parser = argparse.ArgumentParser()
+    parser.add_argument('dir', help='dest of "special files" to print')
     parser.add_argument('--todir', help='dest dir for special files')
     parser.add_argument('--tozip', help='dest zipfile for special files')
     # TODO need an argument to pick up 'from_dir'
     args = parser.parse_args()
+    return args
 
-    # TODO you must write your own code to get the cmdline args.
-    # Read the docs and examples for the argparse module about how to do this.
 
-    # Parsing command line arguments is a must-have skill.
-    # This is input data validation.  If something is wrong (or missing) with any
-    # required args, the general rule is to print a usage message and exit(1).
-
+def main():
+    args = create_parser()
     # +++your code here+++
     # Call your functions
+    # Gather all the special files
+    paths = []
+    for dirname in args.dir:
+        paths.extend(get_special_paths(dirname))
+
+    if not args.todir and not args.tozip:
+        print('\n'.join(paths))
+    if args.todir:
+        copy_to(paths, args.todir)
+    if args.tozip:
+        zip_to(paths, args.tozip)
 
 
 if __name__ == "__main__":
     main()
+
+# python copyspecial.py --todir tmp .
+# python copyspecial.py --tozip tmp.zip .
